@@ -280,7 +280,16 @@ html { scroll-behavior: smooth; }
 .gold-text { color: #f2c13a; }
 .lime-text { color: #a8e85d; }
 .text-balance { text-wrap: balance; }
-.arena-grid { background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 42px 42px; }
+.arena-grid { background-image: linear-gradient(135deg, rgba(168,232,93,.06) 1px, transparent 1px), linear-gradient(45deg, rgba(242,193,58,.045) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px); background-size: 72px 72px, 72px 72px, 18px 18px; }
+.sport-section { position: relative; isolation: isolate; }
+.sport-section::before { content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none; background-image: linear-gradient(112deg, rgba(8,12,18,.86) 0%, rgba(8,12,18,.58) 52%, rgba(8,12,18,.36) 100%), var(--sport-bg, none); background-position: center, center; background-size: cover, cover; background-repeat: no-repeat; filter: saturate(1.28) contrast(1.08); opacity: .82; }
+.sport-section::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(115deg, transparent 0 48%, rgba(168,232,93,.16) 48.15%, transparent 48.35%), repeating-linear-gradient(90deg, transparent 0 78px, rgba(255,255,255,.045) 79px, transparent 80px), radial-gradient(circle at 18% 20%, rgba(242,193,58,.22), transparent 24%), radial-gradient(circle at 84% 82%, rgba(168,232,93,.16), transparent 26%); background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%; mix-blend-mode: screen; opacity: .38; }
+.sport-section-intro::before { opacity: .66; }
+.sport-section-booking::before { opacity: .72; }
+.sport-section-experience::before { opacity: .78; }
+.sport-section-contact::before { background-image: linear-gradient(110deg, rgba(216,179,59,.9) 0%, rgba(216,179,59,.72) 58%, rgba(216,179,59,.54) 100%), var(--sport-bg, none); filter: saturate(1.15) contrast(1.04); opacity: 1; }
+.sport-section-contact::after { opacity: .24; mix-blend-mode: multiply; }
+.sport-footer::before { background-image: linear-gradient(112deg, rgba(7,10,15,.91), rgba(7,10,15,.68)), var(--sport-bg, none); opacity: .92; }
 .noise::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .035; z-index: 50; background-image: radial-gradient(rgba(255,255,255,.9) .6px, transparent .6px); background-size: 5px 5px; }
 .hero-glow { background: radial-gradient(circle at 60% 35%, rgba(242,193,58,.18), transparent 32%), radial-gradient(circle at 12% 88%, rgba(168,232,93,.12), transparent 28%); }
 .gold-shadow { box-shadow: 0 18px 50px rgba(226, 166, 21, .12); }
