@@ -137,7 +137,8 @@ function Hero() {
 function Intro() {
   return <section id="arena" className="bg-[#0e1118] px-5 py-24 lg:px-8 lg:py-32">
     <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[.95fr_1.05fr] lg:items-end">
-      <div><p className="eyebrow">A casa do seu jogo</p><h2 className="arena-display mt-5 max-w-[580px] text-4xl font-semibold leading-[1.05] text-[#f5f0df] sm:text-6xl">Uma quadra, uma turma,<br /><span className="gold-text">uma história nova.</span></h2></div>
+      <div><p className="eyebrow">A casa do seu jogo</p><h2 className="arena-display mt-5 max-w-[580px] text-4xl font-semibold leading-[1.05] text-[#f5f0df] sm:text-6xl">Uma quadra,
+        uma turma,<br /><span className="gold-text">uma história nova.</span></h2></div>
       <div className="max-w-[510px] lg:justify-self-end"><p className="text-lg leading-8 text-[#bbc0be]">A Arena nasceu para transformar uma partida comum em programa obrigatório. Luz na medida, gramado impecável, areia solta e um bar para esticar a resenha.</p><div className="mt-8 grid grid-cols-3 gap-5 border-t border-[#2a313d] pt-6"><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">03</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">modalidades</div></div><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">06</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">espaços de jogo</div></div><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">∞</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">bons momentos</div></div></div></div>
     </div>
   </section>;
