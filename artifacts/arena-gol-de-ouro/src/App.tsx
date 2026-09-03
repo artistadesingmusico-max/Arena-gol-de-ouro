@@ -121,7 +121,7 @@ function Hero() {
     <div className="relative mx-auto flex min-h-[592px] max-w-[1280px] items-center px-5 pb-20 lg:px-8">
       <div className="max-w-[650px]">
         <div className="reveal flex items-center gap-3"><span className="h-px w-10 bg-[#a8e85d]" /><span className="eyebrow">Esporte depois do pôr do sol</span></div>
-        <h1 className="arena-display reveal reveal-delay-1 mt-6 text-5xl font-bold leading-[.95] text-[#f5f0df] sm:text-7xl lg:text-[88px]">Jogue onde<br /><span className="gold-text">a noite acontece.</span></h1>
+        <h1 className="arena-display reveal reveal-delay-1 mt-6 text-5xl font-bold leading-[.95] text-[#f5f0df] sm:text-7xl lg:text-[88px]">Jogue onde<br /><span className="gold-text">a vitória acontece.</span></h1>
         <p className="reveal reveal-delay-2 mt-7 max-w-[475px] text-base leading-7 text-[#c5c9c6] sm:text-lg">Futebol society, vôlei e futevôlei com estrutura premium no estacionamento do Shopping de Águas Lindas.</p>
         <div className="reveal reveal-delay-3 mt-9 flex flex-col gap-3 sm:flex-row">
           <a href="#reservar" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f2c13a] px-6 py-3.5 text-sm font-bold text-[#15171d] transition hover:bg-[#ffd45a]" data-testid="link-hero-reserve">Escolher meu horário <ChevronRight size={17} /></a>
