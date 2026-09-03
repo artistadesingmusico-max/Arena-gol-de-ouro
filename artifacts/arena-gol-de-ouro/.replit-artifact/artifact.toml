@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Arena Gol de Ouro"
+description = "Site institucional premium da Arena Gol de Ouro com agenda de reservas, cadastro de clientes, confirmação de pagamento e painel administrativo para gerenciar horários e reservas."
+version = "1.0.0"
+id = "artifacts/arena-gol-de-ouro"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22796
+
+[services.development]
+run = "pnpm --filter @workspace/arena-gol-de-ouro run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/arena-gol-de-ouro", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/arena-gol-de-ouro/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22796"
+BASE_PATH = "/"

@@ -1,0 +1,1 @@
+- [Contratos de data e validação](openapi-date-zod.md) — parâmetros de data em APIs geradas precisam ser normalizados na borda antes de consultar datas de calendário.

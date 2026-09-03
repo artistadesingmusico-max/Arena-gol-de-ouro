@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: arena
+    description: Arena and reservation operations
 paths:
   /healthz:
     get:
@@ -24,7 +26,233 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /facilities:
+    get:
+      operationId: listFacilities
+      tags: [arena]
+      summary: List sports facilities
+      responses:
+        "200":
+          description: Available facilities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Facility"
+  /availability:
+    get:
+      operationId: listAvailability
+      tags: [arena]
+      summary: List hourly availability for a date
+      parameters:
+        - $ref: "#/components/parameters/DateQuery"
+        - name: facilityId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Hourly availability
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvailabilitySlot"
+        "400":
+          description: Invalid date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /leads:
+    post:
+      operationId: createLead
+      tags: [arena]
+      summary: Register a prospective customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadInput"
+      responses:
+        "201":
+          description: Lead registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          description: Invalid lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /reservations:
+    get:
+      operationId: listReservations
+      tags: [arena]
+      summary: List reservations for the admin panel
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+      responses:
+        "200":
+          description: Reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+    post:
+      operationId: createReservation
+      tags: [arena]
+      summary: Create an hourly reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "400":
+          description: Invalid reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Time slot already reserved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /reservations/{id}:
+    patch:
+      operationId: updateReservation
+      tags: [arena]
+      summary: Update reservation status
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationUpdate"
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "404":
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/summary:
+    get:
+      operationId: getAdminSummary
+      tags: [arena]
+      summary: Get reservation dashboard summary
+      responses:
+        "200":
+          description: Reservation summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSummary"
+  /blocked-slots:
+    get:
+      operationId: listBlockedSlots
+      tags: [arena]
+      summary: List blocked hourly slots
+      responses:
+        "200":
+          description: Blocked slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlockedSlot"
+    post:
+      operationId: createBlockedSlot
+      tags: [arena]
+      summary: Block an hourly slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlockedSlotInput"
+      responses:
+        "201":
+          description: Blocked slot created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockedSlot"
+        "409":
+          description: Slot already reserved or blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /blocked-slots/{id}:
+    delete:
+      operationId: deleteBlockedSlot
+      tags: [arena]
+      summary: Release a blocked hourly slot
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "204":
+          description: Block released
+        "404":
+          description: Block not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    DateQuery:
+      name: date
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +261,158 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Facility:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        shortName:
+          type: string
+        description:
+          type: string
+        priceCents:
+          type: integer
+        accent:
+          type: string
+        capacity:
+          type: integer
+      required: [id, name, shortName, description, priceCents, accent, capacity]
+    AvailabilitySlot:
+      type: object
+      properties:
+        facilityId:
+          type: integer
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        status:
+          type: string
+          enum: [available, reserved, blocked]
+        reservationId:
+          type: ["integer", "null"]
+      required: [facilityId, date, startTime, endTime, status, reservationId]
+    LeadInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        phone:
+          type: string
+          minLength: 10
+        email:
+          type: string
+          format: email
+      required: [name, phone, email]
+    Lead:
+      allOf:
+        - $ref: "#/components/schemas/LeadInput"
+        - type: object
+          properties:
+            id:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+          required: [id, createdAt]
+    ReservationInput:
+      type: object
+      properties:
+        facilityId:
+          type: integer
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        customerName:
+          type: string
+          minLength: 2
+        customerPhone:
+          type: string
+          minLength: 10
+        customerEmail:
+          type: string
+          format: email
+        paymentMethod:
+          type: string
+          enum: [pix, card]
+      required: [facilityId, date, startTime, endTime, customerName, customerPhone, customerEmail, paymentMethod]
+    Reservation:
+      allOf:
+        - $ref: "#/components/schemas/ReservationInput"
+        - type: object
+          properties:
+            id:
+              type: integer
+            facilityName:
+              type: string
+            priceCents:
+              type: integer
+            status:
+              type: string
+              enum: [pending, confirmed, cancelled]
+            createdAt:
+              type: string
+              format: date-time
+          required: [id, facilityName, priceCents, status, createdAt]
+    ReservationUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+      required: [status]
+    AdminSummary:
+      type: object
+      properties:
+        reservationsToday:
+          type: integer
+        confirmedThisMonth:
+          type: integer
+        expectedRevenueCents:
+          type: integer
+        activeCustomers:
+          type: integer
+      required: [reservationsToday, confirmedThisMonth, expectedRevenueCents, activeCustomers]
+    BlockedSlotInput:
+      type: object
+      properties:
+        facilityId:
+          type: integer
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        reason:
+          type: string
+      required: [facilityId, date, startTime, endTime]
+    BlockedSlot:
+      allOf:
+        - $ref: "#/components/schemas/BlockedSlotInput"
+        - type: object
+          properties:
+            id:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+          required: [id, createdAt]
 
