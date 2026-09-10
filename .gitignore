@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Local dev config (may contain real secrets like DATABASE_URL)
+.claude/launch.json
