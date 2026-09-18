@@ -62,6 +62,7 @@ import sandImage from '@assets/IMG_6740-scaled_1788473845694.webp';
 import brandLogo from '@assets/logo-arena.png.jpeg';
 import heroWordmarkImage from '@assets/Segunda dobra.png.jpeg';
 import pixInstructionsImage from '@assets/pix-sicoob-instrucoes_1789696879.jpg';
+import droneVideo from '@assets/drone-sports-complex.mp4';
 
 const money = (cents: number) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -76,7 +77,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       alt="Arena Gol de Ouro"
       className={
         compact
-          ? 'h-14 w-auto rounded-xl shadow-[0_0_0_2px_rgba(242,193,58,.55),0_8px_24px_rgba(242,193,58,.25)] sm:h-[68px]'
+          ? 'glow-pulse h-16 w-auto rounded-xl shadow-[0_0_0_2px_rgba(242,193,58,.6),0_0_30px_rgba(242,193,58,.35),0_8px_24px_rgba(242,193,58,.25)] sm:h-24'
           : 'glow-pulse h-24 w-auto rounded-2xl shadow-[0_0_0_3px_rgba(242,193,58,.65),0_0_45px_rgba(242,193,58,.4),0_12px_32px_rgba(0,0,0,.45)] sm:h-32'
       }
     />
@@ -117,7 +118,7 @@ function SiteHeader() {
   </header>;
 }
 
-function Hero({ facilities, initialFacilityId, onSuccess }: { facilities: Facility[]; initialFacilityId?: number; onSuccess: (reservation: Reservation) => void }) {
+function Hero({ facilities, initialFacilityId, initialCourt, onSuccess }: { facilities: Facility[]; initialFacilityId?: number; initialCourt?: number; onSuccess: (reservation: Reservation) => void }) {
   return <section id="topo" className="hero-glow relative overflow-hidden border-b border-white/10 bg-[#0e1118] pt-28">
     <img src={aerialImage} alt="Vista aérea da Arena Gol de Ouro ao pôr do sol" className="absolute inset-0 h-full w-full object-cover object-top opacity-70" />
     <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(40,28,6,.5)_4%,rgba(40,28,6,.3)_35%,rgba(40,28,6,.05)_100%)]" />
@@ -138,7 +139,7 @@ function Hero({ facilities, initialFacilityId, onSuccess }: { facilities: Facili
           <div className="mt-14 flex flex-wrap items-center gap-x-7 gap-y-3 text-xs text-[#aeb6b4]"><span className="flex items-center gap-2"><Clock3 size={14} className="text-[#f2c13a]" /> 07h — 02h</span><span className="flex items-center gap-2"><ShieldCheck size={14} className="text-[#a8e85d]" /> Ambiente seguro</span></div>
         </div>
       </div>
-      <div className="mt-16 -mx-5 lg:-mx-8"><BookingWidget facilities={facilities} initialFacilityId={initialFacilityId} onSuccess={onSuccess} /></div>
+      <div className="mt-16 -mx-5 lg:-mx-8"><BookingWidget facilities={facilities} initialFacilityId={initialFacilityId} initialCourt={initialCourt} onSuccess={onSuccess} /></div>
       <div id="arena" className="mt-16 grid gap-12 border-t border-white/10 pt-16 lg:grid-cols-[.95fr_1.05fr] lg:items-end">
         <div><p className="eyebrow">A casa do seu jogo</p><h2 className="arena-display mt-5 max-w-[580px] text-4xl font-semibold leading-[1.05] text-[#f5f0df] sm:text-6xl">Jogue onde<br /><span className="gold-text">a vitória acontece.</span></h2></div>
         <div className="max-w-[510px] lg:justify-self-end"><p className="text-lg leading-8 text-[#bbc0be]">A Arena nasceu para transformar uma partida comum em programa obrigatório. Luz na medida, gramado impecável, areia solta e um bar para esticar a resenha.</p><div className="mt-8 grid grid-cols-3 gap-5 border-t border-[#2a313d] pt-6"><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">03</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">modalidades</div></div><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">06</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">espaços de jogo</div></div><div><div className="arena-display text-3xl font-bold text-[#f2c13a]">∞</div><div className="mt-1 text-xs uppercase tracking-wider text-[#89929a]">bons momentos</div></div></div></div>
@@ -152,17 +153,22 @@ const courtsLabel: Record<string, string> = { 'Quadra de Areia': '6 campos' };
 const facilityVisual = (name: string) => (name.includes('Society') ? complexImage : name.includes('Areia') ? sandImage : loungeImage);
 const facilityIcon = (name: string) => (name.includes('Society') ? Footprints : name.includes('Areia') ? Volleyball : Sparkles);
 
-function Facilities({ facilities, isLoading, isError, onRetry, onSelect }: { facilities: Facility[]; isLoading: boolean; isError: boolean; onRetry: () => void; onSelect: (id: number) => void }) {
+function Facilities({ facilities, isLoading, isError, onRetry, onSelect }: { facilities: Facility[]; isLoading: boolean; isError: boolean; onRetry: () => void; onSelect: (id: number, court?: number) => void }) {
+  const [expandedFacilityId, setExpandedFacilityId] = useState<number | null>(null);
+  const displayFacilities = facilities.filter((facility) => facility.name !== 'Área de Lazer');
   return <section id="estrutura" className="arena-grid relative overflow-hidden border-y border-[#252d38] bg-[#111720] px-5 pb-24 pt-36 lg:px-8 lg:pt-40">
-    <img src={complexImage} alt="Vista aérea da Arena Gol de Ouro" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+    <video src={droneVideo} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover opacity-80" />
     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(42,30,6,.22)_0%,rgba(42,30,6,.45)_38%,#1a1408_100%)]" />
     <div className="relative mx-auto max-w-[1280px]"><div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><div className="flex items-center gap-3"><span className="h-px w-10 bg-[#f2c13a]" /><p className="eyebrow !text-[#f2c13a]">O palco está pronto</p></div><h2 className="arena-display mt-5 text-5xl font-bold leading-[.95] text-[#f5f0df] sm:text-7xl lg:text-[80px]">Escolha<br /><span className="gold-text">seu jogo.</span></h2></div><p className="max-w-[330px] text-sm leading-6 text-[#c1c6c4]">Tudo o que você precisa para chegar, jogar e sair querendo marcar o próximo.</p></div>
       {isLoading ? <div className="mt-10"><LoadingState label="Carregando espaços da arena" /></div> :
       isError ? <div className="mt-10"><ErrorState onRetry={onRetry} /></div> :
-      facilities.length === 0 ? <div className="mt-10 rounded-2xl border border-dashed border-[#34404b] p-10 text-center text-sm text-[#9da5a8]" data-testid="empty-facilities">Nenhuma modalidade disponível no momento. Tente novamente em instantes.</div> :
-      <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">{facilities.map((facility) => { const Icon = facilityIcon(facility.name); return <article key={facility.id} className="lift group relative overflow-hidden rounded-2xl border border-[#2b3540] bg-[#171e28]" data-testid={`card-facility-${facility.id}`}>
+      displayFacilities.length === 0 ? <div className="mt-10 rounded-2xl border border-dashed border-[#34404b] p-10 text-center text-sm text-[#9da5a8]" data-testid="empty-facilities">Nenhuma modalidade disponível no momento. Tente novamente em instantes.</div> :
+      <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">{displayFacilities.map((facility) => { const Icon = facilityIcon(facility.name); const hasCourts = facility.courts > 1; const expanded = expandedFacilityId === facility.id; return <article key={facility.id} className="lift group relative overflow-hidden rounded-2xl border border-[#2b3540] bg-[#171e28]" data-testid={`card-facility-${facility.id}`}>
         <div className="relative h-52 overflow-hidden"><img src={facilityVisual(facility.name)} alt={facility.name} className="h-full w-full object-cover opacity-75 transition duration-500 group-hover:scale-105 group-hover:opacity-95" /><div className="absolute inset-0 bg-gradient-to-t from-[#171e28] via-transparent to-transparent" /><span className="absolute left-4 top-4 rounded-full bg-[#10151c]/80 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#d9dfd4]">{facility.capacity} pessoas</span>{courtsLabel[facility.name] && <span className="absolute right-4 top-4 rounded-full bg-[#f2c13a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#12151c]" data-testid={`badge-courts-${facility.id}`}>{courtsLabel[facility.name]}</span>}</div>
-        <div className="p-5"><div className="flex items-start justify-between gap-4"><div><h3 className="arena-display text-2xl font-semibold text-[#f4f0df]">{facility.name}</h3><p className="mt-2 text-sm leading-6 text-[#9ea6aa]">{facility.description}</p></div><div className="rounded-lg bg-[#232b25] p-2 text-[#a8e85d]"><Icon size={19} /></div></div>{facility.name !== 'Área de Lazer' && <div className="mt-5 flex items-center justify-between border-t border-[#2a323c] pt-4"><div><span className="text-[11px] text-[#89929a]">a partir de</span><strong className="ml-2 text-sm text-[#f2c13a]">{money(facility.priceCents)} <span className="font-normal text-[#89929a]">/ hora</span></strong></div><button type="button" onClick={() => onSelect(facility.id)} className="flex items-center gap-1 text-sm font-bold text-[#f2c13a] transition hover:text-[#ffe07b]" data-testid={`button-select-facility-${facility.id}`}>Reservar <ArrowUpRight size={15} /></button></div>}</div>
+        <div className="p-5"><div className="flex items-start justify-between gap-4"><div><h3 className="arena-display text-2xl font-semibold text-[#f4f0df]">{facility.name}</h3><p className="mt-2 text-sm leading-6 text-[#9ea6aa]">{facility.description}</p></div><div className="rounded-lg bg-[#232b25] p-2 text-[#a8e85d]"><Icon size={19} /></div></div>
+          <div className="mt-5 flex items-center justify-between border-t border-[#2a323c] pt-4"><div><span className="text-[11px] text-[#89929a]">a partir de</span><strong className="ml-2 text-sm text-[#f2c13a]">{money(facility.priceCents)} <span className="font-normal text-[#89929a]">/ hora</span></strong></div><button type="button" onClick={() => hasCourts ? setExpandedFacilityId(expanded ? null : facility.id) : onSelect(facility.id)} className="flex items-center gap-1 text-sm font-bold text-[#f2c13a] transition hover:text-[#ffe07b]" data-testid={`button-select-facility-${facility.id}`}>Reservar <ArrowUpRight size={15} /></button></div>
+          {hasCourts && expanded && <div className="mt-4 rounded-xl border border-[#35404d] bg-[#111720] p-4" data-testid={`box-facility-courts-${facility.id}`}><p className="mb-3 text-sm font-semibold text-[#e8e5d5]">Escolha o campo</p><div className="grid grid-cols-3 gap-2">{Array.from({ length: facility.courts }, (_, index) => index + 1).map((n) => <button type="button" key={n} onClick={() => onSelect(facility.id, n)} className="rounded-lg border border-[#35404d] bg-[#171e28] px-2 py-3 text-sm font-semibold text-[#d8d9d0] transition hover:border-[#a8e85d]" data-testid={`button-facility-court-${facility.id}-${n}`}>Campo {n}</button>)}</div></div>}
+        </div>
       </article>; })}</div>}
     </div>
   </section>;
@@ -176,11 +182,11 @@ function Experience() {
   </div></section>;
 }
 
-function BookingWidget({ facilities, initialFacilityId, onSuccess }: { facilities: Facility[]; initialFacilityId?: number; onSuccess: (reservation: Reservation) => void }) {
+function BookingWidget({ facilities, initialFacilityId, initialCourt, onSuccess }: { facilities: Facility[]; initialFacilityId?: number; initialCourt?: number; onSuccess: (reservation: Reservation) => void }) {
   const bookableFacilities = useMemo(() => facilities.filter((facility) => facility.name !== 'Área de Lazer'), [facilities]);
   const [date, setDate] = useState(todayISO());
   const [facilityId, setFacilityId] = useState(initialFacilityId ?? bookableFacilities[0]?.id ?? 0);
-  const [court, setCourt] = useState(1);
+  const [court, setCourt] = useState(initialCourt ?? 1);
   const [slot, setSlot] = useState<{ startTime: string; endTime: string } | null>(null);
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
@@ -198,13 +204,13 @@ function BookingWidget({ facilities, initialFacilityId, onSuccess }: { facilitie
   useEffect(() => {
     if (!initialFacilityId) return;
     setFacilityId(initialFacilityId);
-    setCourt(1);
+    setCourt(initialCourt ?? 1);
     setSlot(null);
     setStep(1);
     // Only react to the parent explicitly requesting a facility (e.g. a "Reservar" card click) —
     // not to the user's own manual changes in the dropdown below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFacilityId]);
+  }, [initialFacilityId, initialCourt]);
   useEffect(() => {
     if (!facilityId && bookableFacilities[0]) {
       setFacilityId(bookableFacilities[0].id);
@@ -294,10 +300,11 @@ function Footer() {
 function Home() {
   const facilitiesQuery = useListFacilities({ query: { queryKey: getListFacilitiesQueryKey() } });
   const [initialFacilityId, setInitialFacilityId] = useState<number>();
+  const [initialCourt, setInitialCourt] = useState<number>();
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const facilities = facilitiesQuery.data ?? [];
-  const scrollToBooking = (id: number) => { setInitialFacilityId(id); document.getElementById('reservar')?.scrollIntoView({ behavior: 'smooth' }); };
-  return <div className="noise min-h-[100dvh] overflow-hidden bg-[#0e1118]"><SiteHeader /><main><Facilities facilities={facilities} isLoading={facilitiesQuery.isLoading} isError={facilitiesQuery.isError} onRetry={() => facilitiesQuery.refetch()} onSelect={scrollToBooking} /><Hero facilities={facilities} initialFacilityId={initialFacilityId} onSuccess={setReservation} /><Experience /><LeadCapture /></main><Footer />{reservation && <Confirmation reservation={reservation} onReset={() => setReservation(null)} />}</div>;
+  const scrollToBooking = (id: number, court?: number) => { setInitialFacilityId(id); setInitialCourt(court); document.getElementById('reservar')?.scrollIntoView({ behavior: 'smooth' }); };
+  return <div className="noise min-h-[100dvh] overflow-hidden bg-[#0e1118]"><SiteHeader /><main><Facilities facilities={facilities} isLoading={facilitiesQuery.isLoading} isError={facilitiesQuery.isError} onRetry={() => facilitiesQuery.refetch()} onSelect={scrollToBooking} /><Hero facilities={facilities} initialFacilityId={initialFacilityId} initialCourt={initialCourt} onSuccess={setReservation} /><Experience /><LeadCapture /></main><Footer />{reservation && <Confirmation reservation={reservation} onReset={() => setReservation(null)} />}</div>;
 }
 
 function StatusPill({ status }: { status: ReservationStatus }) {
