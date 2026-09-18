@@ -1,0 +1,5 @@
+{
+  "installCommand": "corepack pnpm install",
+  "buildCommand": "corepack pnpm --filter @workspace/arena-gol-de-ouro run build && node artifacts/api-server/build-app-only.mjs",
+  "outputDirectory": "artifacts/arena-gol-de-ouro/dist/public"
+}

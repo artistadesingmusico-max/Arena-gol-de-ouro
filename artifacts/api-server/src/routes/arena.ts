@@ -42,7 +42,7 @@ const facilities = [
     id: 2,
     name: "Quadra de Areia",
     shortName: "Areia",
-    description: "Vôlei e futevôlei com clima de praia em 7 campos no coração da cidade.",
+    description: "Vôlei e futevôlei com clima de praia em 6 campos no coração da cidade.",
     priceCents: 8000,
     accent: "gold",
     capacity: 14,
