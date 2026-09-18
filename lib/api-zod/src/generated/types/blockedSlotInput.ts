@@ -8,6 +8,7 @@
 
 export interface BlockedSlotInput {
   facilityId: number;
+  court?: number;
   date: Date;
   startTime: string;
   endTime: string;

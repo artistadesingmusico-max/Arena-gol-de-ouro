@@ -33,10 +33,21 @@ const facilities = [
     id: 1,
     name: "Campo Society 01",
     shortName: "Society 01",
-    description: "Grama sintética profissional em 2 campos para jogar com a sua turma.",
+    description: "Grama sintética profissional para jogar com a sua turma.",
     priceCents: 15000,
     accent: "lime",
     capacity: 14,
+    courts: 1,
+  },
+  {
+    id: 4,
+    name: "Campo Society 02",
+    shortName: "Society 02",
+    description: "Segundo campo society, grama sintética profissional e iluminação completa.",
+    priceCents: 15000,
+    accent: "lime",
+    capacity: 14,
+    courts: 1,
   },
   {
     id: 2,
@@ -46,6 +57,7 @@ const facilities = [
     priceCents: 8000,
     accent: "gold",
     capacity: 14,
+    courts: 6,
   },
   {
     id: 3,
@@ -55,6 +67,7 @@ const facilities = [
     priceCents: 8000,
     accent: "sand",
     capacity: 12,
+    courts: 1,
   },
 ];
 
@@ -131,26 +144,33 @@ router.get("/availability", async (req, res): Promise<void> => {
   ]);
 
   const availability = selectedFacilities.flatMap((facility) =>
-    slots.map((slot) => {
-      const reservation = reservations.find(
-        (item) =>
-          item.facilityId === facility.id &&
-          item.startTime === slot.startTime &&
-          item.status !== "cancelled",
-      );
-      const blocked = blockedSlots.find(
-        (item) =>
-          item.facilityId === facility.id && item.startTime === slot.startTime,
-      );
+    Array.from({ length: facility.courts }, (_, index) => index + 1).flatMap(
+      (court) =>
+        slots.map((slot) => {
+          const reservation = reservations.find(
+            (item) =>
+              item.facilityId === facility.id &&
+              item.court === court &&
+              item.startTime === slot.startTime &&
+              item.status !== "cancelled",
+          );
+          const blocked = blockedSlots.find(
+            (item) =>
+              item.facilityId === facility.id &&
+              item.court === court &&
+              item.startTime === slot.startTime,
+          );
 
-      return {
-        facilityId: facility.id,
-        date,
-        ...slot,
-        status: reservation ? "reserved" : blocked ? "blocked" : "available",
-        reservationId: reservation?.id ?? null,
-      };
-    }),
+          return {
+            facilityId: facility.id,
+            court,
+            date,
+            ...slot,
+            status: reservation ? "reserved" : blocked ? "blocked" : "available",
+            reservationId: reservation?.id ?? null,
+          };
+        }),
+    ),
   );
 
   res.json(ListAvailabilityResponse.parse(availability));
@@ -208,6 +228,12 @@ router.post("/reservations", async (req, res): Promise<void> => {
     return;
   }
 
+  const court = parsed.data.court ?? 1;
+  if (court < 1 || court > facility.courts) {
+    res.status(400).json({ error: "Campo inválido para este espaço." });
+    return;
+  }
+
   const [reservation, existingBlock] = await Promise.all([
     db
       .select()
@@ -215,6 +241,7 @@ router.post("/reservations", async (req, res): Promise<void> => {
       .where(
         and(
           eq(reservationsTable.facilityId, parsed.data.facilityId),
+          eq(reservationsTable.court, court),
           eq(reservationsTable.date, calendarDate(parsed.data.date)),
           eq(reservationsTable.startTime, parsed.data.startTime),
         ),
@@ -225,6 +252,7 @@ router.post("/reservations", async (req, res): Promise<void> => {
       .where(
         and(
           eq(blockedSlotsTable.facilityId, parsed.data.facilityId),
+          eq(blockedSlotsTable.court, court),
           eq(blockedSlotsTable.date, calendarDate(parsed.data.date)),
           eq(blockedSlotsTable.startTime, parsed.data.startTime),
         ),
@@ -257,6 +285,7 @@ router.post("/reservations", async (req, res): Promise<void> => {
     .insert(reservationsTable)
     .values({
       ...parsed.data,
+      court,
       date: calendarDate(parsed.data.date),
       priceCents: facility.priceCents,
       status: "confirmed",
@@ -346,6 +375,8 @@ router.post("/blocked-slots", async (req, res): Promise<void> => {
     return;
   }
 
+  const blockCourt = parsed.data.court ?? 1;
+
   const [existingReservation, existingBlock] = await Promise.all([
     db
       .select()
@@ -353,6 +384,7 @@ router.post("/blocked-slots", async (req, res): Promise<void> => {
       .where(
         and(
           eq(reservationsTable.facilityId, parsed.data.facilityId),
+          eq(reservationsTable.court, blockCourt),
           eq(reservationsTable.date, calendarDate(parsed.data.date)),
           eq(reservationsTable.startTime, parsed.data.startTime),
           eq(reservationsTable.status, "confirmed"),
@@ -364,6 +396,7 @@ router.post("/blocked-slots", async (req, res): Promise<void> => {
       .where(
         and(
           eq(blockedSlotsTable.facilityId, parsed.data.facilityId),
+          eq(blockedSlotsTable.court, blockCourt),
           eq(blockedSlotsTable.date, calendarDate(parsed.data.date)),
           eq(blockedSlotsTable.startTime, parsed.data.startTime),
         ),
@@ -379,6 +412,7 @@ router.post("/blocked-slots", async (req, res): Promise<void> => {
     .insert(blockedSlotsTable)
     .values({
       ...parsed.data,
+      court: blockCourt,
       date: calendarDate(parsed.data.date),
     })
     .returning();

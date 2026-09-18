@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 export const reservationsTable = pgTable("arena_reservations", {
   id: serial("id").primaryKey(),
   facilityId: integer("facility_id").notNull(),
+  court: integer("court").notNull().default(1),
   date: date("date", { mode: "string" }).notNull(),
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),

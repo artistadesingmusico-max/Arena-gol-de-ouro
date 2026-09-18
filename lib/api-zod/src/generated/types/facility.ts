@@ -14,4 +14,6 @@ export interface Facility {
   priceCents: number;
   accent: string;
   capacity: number;
+  /** Number of independently bookable courts within this facility */
+  courts: number;
 }

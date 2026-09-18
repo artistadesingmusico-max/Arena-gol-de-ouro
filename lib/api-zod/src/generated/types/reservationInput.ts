@@ -9,6 +9,8 @@ import type { ReservationInputPaymentMethod } from './reservationInputPaymentMet
 
 export interface ReservationInput {
   facilityId: number;
+  /** Which specific court to reserve, for facilities with multiple courts (defaults to 1) */
+  court?: number;
   date: Date;
   startTime: string;
   endTime: string;

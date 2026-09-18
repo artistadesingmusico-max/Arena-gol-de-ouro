@@ -21,6 +21,8 @@ export interface Facility {
   priceCents: number;
   accent: string;
   capacity: number;
+  /** Number of independently bookable courts within this facility */
+  courts: number;
 }
 
 export type AvailabilitySlotStatus = typeof AvailabilitySlotStatus[keyof typeof AvailabilitySlotStatus];
@@ -34,6 +36,7 @@ export const AvailabilitySlotStatus = {
 
 export interface AvailabilitySlot {
   facilityId: number;
+  court: number;
   date: string;
   startTime: string;
   endTime: string;
@@ -65,6 +68,8 @@ export const ReservationInputPaymentMethod = {
 
 export interface ReservationInput {
   facilityId: number;
+  /** Which specific court to reserve, for facilities with multiple courts (defaults to 1) */
+  court?: number;
   date: string;
   startTime: string;
   endTime: string;
@@ -115,6 +120,7 @@ export interface AdminSummary {
 
 export interface BlockedSlotInput {
   facilityId: number;
+  court?: number;
   date: string;
   startTime: string;
   endTime: string;

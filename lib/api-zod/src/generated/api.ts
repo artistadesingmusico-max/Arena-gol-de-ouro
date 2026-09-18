@@ -27,7 +27,8 @@ export const ListFacilitiesResponseItem = zod.object({
   "description": zod.string(),
   "priceCents": zod.int(),
   "accent": zod.string(),
-  "capacity": zod.int()
+  "capacity": zod.int(),
+  "courts": zod.int().describe('Number of independently bookable courts within this facility')
 })
 export const ListFacilitiesResponse = zod.array(ListFacilitiesResponseItem)
 
@@ -42,6 +43,7 @@ export const ListAvailabilityQueryParams = zod.object({
 
 export const ListAvailabilityResponseItem = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int(),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -98,6 +100,7 @@ export const listReservationsResponseOneCustomerPhoneMin = 10;
 
 export const ListReservationsResponseItem = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional().describe('Which specific court to reserve, for facilities with multiple courts (defaults to 1)'),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -126,6 +129,7 @@ export const createReservationBodyCustomerPhoneMin = 10;
 
 export const CreateReservationBody = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional().describe('Which specific court to reserve, for facilities with multiple courts (defaults to 1)'),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -143,6 +147,7 @@ export const createReservationResponseOneCustomerPhoneMin = 10;
 
 export const CreateReservationResponse = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional().describe('Which specific court to reserve, for facilities with multiple courts (defaults to 1)'),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -178,6 +183,7 @@ export const updateReservationResponseOneCustomerPhoneMin = 10;
 
 export const UpdateReservationResponse = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional().describe('Which specific court to reserve, for facilities with multiple courts (defaults to 1)'),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -210,6 +216,7 @@ export const GetAdminSummaryResponse = zod.object({
  */
 export const ListBlockedSlotsResponseItem = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional(),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -226,6 +233,7 @@ export const ListBlockedSlotsResponse = zod.array(ListBlockedSlotsResponseItem)
  */
 export const CreateBlockedSlotBody = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional(),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),
@@ -234,6 +242,7 @@ export const CreateBlockedSlotBody = zod.object({
 
 export const CreateBlockedSlotResponse = zod.object({
   "facilityId": zod.int(),
+  "court": zod.int().optional(),
   "date": zod.coerce.date(),
   "startTime": zod.string(),
   "endTime": zod.string(),

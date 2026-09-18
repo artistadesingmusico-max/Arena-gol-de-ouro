@@ -9,6 +9,7 @@ import type { AvailabilitySlotStatus } from './availabilitySlotStatus';
 
 export interface AvailabilitySlot {
   facilityId: number;
+  court: number;
   date: Date;
   startTime: string;
   endTime: string;
