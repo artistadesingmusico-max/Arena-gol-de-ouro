@@ -3,6 +3,7 @@
   "buildCommand": "corepack pnpm --filter @workspace/arena-gol-de-ouro run build && node artifacts/api-server/build-app-only.mjs",
   "outputDirectory": "artifacts/arena-gol-de-ouro/dist/public",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api" }
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
