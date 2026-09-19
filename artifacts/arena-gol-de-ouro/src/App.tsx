@@ -103,16 +103,16 @@ function SiteHeader() {
   const nav = [['A arena', '#arena'], ['Estrutura', '#estrutura'], ['Reservas', '#reservar'], ['Contato', '#contato']];
   return <header className="absolute left-0 right-0 top-0 z-30 border-b border-white/10 bg-[#0e1118]/60 backdrop-blur-md">
     <div className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-4 lg:px-8">
-      <a href="#topo" data-testid="link-home"><Brand compact /></a>
-      <nav className="hidden items-center gap-7 md:flex" aria-label="Navegação principal">
+      <a href="#topo" className="flex min-w-0 items-center gap-3 sm:gap-5" data-testid="link-home"><Brand compact /><span className="arena-display flex flex-col font-bold uppercase leading-[1.05] tracking-wide text-[#f2c13a] drop-shadow-[0_2px_12px_rgba(242,193,58,.45)]" data-testid="text-header-location"><span className="text-sm sm:text-xl lg:text-2xl">Shopping de</span><span className="text-lg sm:text-3xl lg:text-4xl">Águas Lindas</span></span></a>
+      <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegação principal">
         {nav.map(([label, href]) => <a key={href} href={href} className="text-[13px] font-medium text-[#c6c9c9] transition hover:text-[#f2c13a]" data-testid={`link-nav-${href.slice(1)}`}>{label}</a>)}
       </nav>
       <div className="flex items-center gap-3">
         <a href="#reservar" className="hidden rounded-full bg-[#f2c13a] px-5 py-2.5 text-[13px] font-bold text-[#15171d] transition hover:bg-[#ffd45a] sm:block" data-testid="link-header-reserve">Reservar horário</a>
-        <button type="button" onClick={() => setOpen(!open)} className="rounded-lg border border-white/15 p-2 text-[#f6f0dc] md:hidden" aria-label="Abrir menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button>
+        <button type="button" onClick={() => setOpen(!open)} className="rounded-lg border border-white/15 p-2 text-[#f6f0dc] lg:hidden" aria-label="Abrir menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button>
       </div>
     </div>
-    {open && <nav className="border-t border-white/10 bg-[#10151d] px-5 py-3 md:hidden" aria-label="Menu mobile">
+    {open && <nav className="border-t border-white/10 bg-[#10151d] px-5 py-3 lg:hidden" aria-label="Menu mobile">
       {nav.map(([label, href]) => <a onClick={() => setOpen(false)} key={href} href={href} className="block border-b border-white/5 py-3 text-sm text-[#d8d8cf]" data-testid={`link-mobile-${href.slice(1)}`}>{label}</a>)}
       <a onClick={() => setOpen(false)} href="#reservar" className="mt-3 block rounded-lg bg-[#f2c13a] px-4 py-3 text-center text-sm font-bold text-[#15171d]" data-testid="link-mobile-reserve">Reservar horário</a>
     </nav>}
