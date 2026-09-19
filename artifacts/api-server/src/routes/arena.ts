@@ -300,7 +300,11 @@ router.post("/reservations", async (req, res): Promise<void> => {
   );
 });
 
-class SlotConflictError extends Error {}
+class SlotConflictError extends Error {
+  constructor(readonly labels: string[] = []) {
+    super("slot conflict");
+  }
+}
 
 function todayInBrazil(): string {
   return new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -372,7 +376,7 @@ router.post("/bookings", async (req, res): Promise<void> => {
         tx.select().from(blockedSlotsTable).where(inArray(blockedSlotsTable.date, dates)),
       ]);
 
-      const taken = items.some(
+      const takenItems = items.filter(
         (item) =>
           existingReservations.some(
             (row) =>
@@ -389,7 +393,14 @@ router.post("/bookings", async (req, res): Promise<void> => {
               row.startTime === item.startTime,
           ),
       );
-      if (taken) throw new SlotConflictError();
+      if (takenItems.length) {
+        throw new SlotConflictError(
+          takenItems.map(
+            (item) =>
+              `${item.date.slice(8, 10)}/${item.date.slice(5, 7)} ${item.startTime} (${item.facility.shortName}${item.facility.courts > 1 ? ` campo ${item.court}` : ""})`,
+          ),
+        );
+      }
 
       const [lead] = await tx
         .select()
@@ -434,7 +445,11 @@ router.post("/bookings", async (req, res): Promise<void> => {
     const uniqueViolation = (error as { code?: string; cause?: { code?: string } })?.code === "23505" ||
       (error as { cause?: { code?: string } })?.cause?.code === "23505";
     if (error instanceof SlotConflictError || uniqueViolation) {
-      res.status(409).json({ error: "Algum horário do combo acabou de ser reservado. Atualize e escolha outro." });
+      const labels = error instanceof SlotConflictError ? error.labels : [];
+      const detail = labels.length
+        ? ` Indisponível: ${labels.slice(0, 6).join(", ")}${labels.length > 6 ? "…" : ""}.`
+        : "";
+      res.status(409).json({ error: `Algum horário do combo não está mais disponível.${detail}` });
       return;
     }
     throw error;
