@@ -1,6 +1,9 @@
 import { Router, type IRouter } from "express";
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, lt, ne, sql } from "drizzle-orm";
+import { buildPixPayload } from "../lib/pix";
 import {
+  CreateBookingBody,
+  CreateBookingResponse,
   CreateBlockedSlotBody,
   CreateBlockedSlotResponse,
   CreateLeadBody,
@@ -295,6 +298,147 @@ router.post("/reservations", async (req, res): Promise<void> => {
   res.status(201).json(
     CreateReservationResponse.parse(reservationResponse(created)),
   );
+});
+
+class SlotConflictError extends Error {}
+
+function todayInBrazil(): string {
+  return new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+router.post("/bookings", async (req, res): Promise<void> => {
+  const parsed = CreateBookingBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const { customerName, customerPhone, customerEmail, paymentMethod } = parsed.data;
+  const seen = new Set<string>();
+  const items: {
+    facility: (typeof facilities)[number];
+    court: number;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }[] = [];
+
+  for (const item of parsed.data.items) {
+    const facility = facilityById(item.facilityId);
+    const court = item.court ?? 1;
+    const date = calendarDate(item.date);
+    const slot = slots.find((entry) => entry.startTime === item.startTime);
+
+    if (!facility || facility.name === "Área de Lazer") {
+      res.status(400).json({ error: "Espaço esportivo não disponível para reserva." });
+      return;
+    }
+    if (court < 1 || court > facility.courts) {
+      res.status(400).json({ error: "Campo inválido para este espaço." });
+      return;
+    }
+    if (!slot || slot.endTime !== item.endTime) {
+      res.status(400).json({ error: "Horário inválido." });
+      return;
+    }
+    if (date < todayInBrazil()) {
+      res.status(400).json({ error: "Não é possível reservar datas passadas." });
+      return;
+    }
+
+    const key = `${facility.id}|${court}|${date}|${slot.startTime}`;
+    if (seen.has(key)) {
+      res.status(400).json({ error: "O combo tem horários repetidos." });
+      return;
+    }
+    seen.add(key);
+    items.push({ facility, court, date, startTime: slot.startTime, endTime: slot.endTime });
+  }
+
+  const totalCents = items.reduce((sum, item) => sum + item.facility.priceCents, 0);
+  const code = `AGO${Date.now().toString(36).toUpperCase()}${Math.floor(Math.random() * 36 ** 3)
+    .toString(36)
+    .toUpperCase()
+    .padStart(3, "0")}`;
+  const dates = [...new Set(items.map((item) => item.date))];
+
+  try {
+    const created = await db.transaction(async (tx) => {
+      const [existingReservations, existingBlocks] = await Promise.all([
+        tx
+          .select()
+          .from(reservationsTable)
+          .where(and(inArray(reservationsTable.date, dates), ne(reservationsTable.status, "cancelled"))),
+        tx.select().from(blockedSlotsTable).where(inArray(blockedSlotsTable.date, dates)),
+      ]);
+
+      const taken = items.some(
+        (item) =>
+          existingReservations.some(
+            (row) =>
+              row.facilityId === item.facility.id &&
+              row.court === item.court &&
+              row.date === item.date &&
+              row.startTime === item.startTime,
+          ) ||
+          existingBlocks.some(
+            (row) =>
+              row.facilityId === item.facility.id &&
+              row.court === item.court &&
+              row.date === item.date &&
+              row.startTime === item.startTime,
+          ),
+      );
+      if (taken) throw new SlotConflictError();
+
+      const [lead] = await tx
+        .select()
+        .from(leadsTable)
+        .where(eq(leadsTable.email, customerEmail))
+        .limit(1);
+      if (!lead) {
+        await tx.insert(leadsTable).values({ name: customerName, phone: customerPhone, email: customerEmail });
+      }
+
+      return tx
+        .insert(reservationsTable)
+        .values(
+          items.map((item) => ({
+            facilityId: item.facility.id,
+            court: item.court,
+            date: item.date,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            customerName,
+            customerPhone,
+            customerEmail,
+            paymentMethod,
+            priceCents: item.facility.priceCents,
+            status: "confirmed",
+            bookingCode: code,
+          })),
+        )
+        .returning();
+    });
+
+    res.status(201).json(
+      CreateBookingResponse.parse({
+        code,
+        totalCents,
+        paymentMethod,
+        reservations: created.map(reservationResponse),
+        pix: paymentMethod === "pix" ? { payload: buildPixPayload(totalCents, code), amountCents: totalCents } : null,
+      }),
+    );
+  } catch (error) {
+    const uniqueViolation = (error as { code?: string; cause?: { code?: string } })?.code === "23505" ||
+      (error as { cause?: { code?: string } })?.cause?.code === "23505";
+    if (error instanceof SlotConflictError || uniqueViolation) {
+      res.status(409).json({ error: "Algum horário do combo acabou de ser reservado. Atualize e escolha outro." });
+      return;
+    }
+    throw error;
+  }
 });
 
 router.patch("/reservations/:id", async (req, res): Promise<void> => {

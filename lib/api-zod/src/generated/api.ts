@@ -113,6 +113,7 @@ export const ListReservationsResponseItem = zod.object({
   "facilityName": zod.string(),
   "priceCents": zod.int(),
   "status": zod.enum(['pending', 'confirmed', 'cancelled']),
+  "bookingCode": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 }))
 export const ListReservationsResponse = zod.array(ListReservationsResponseItem)
@@ -160,8 +161,69 @@ export const CreateReservationResponse = zod.object({
   "facilityName": zod.string(),
   "priceCents": zod.int(),
   "status": zod.enum(['pending', 'confirmed', 'cancelled']),
+  "bookingCode": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 }))
+
+
+/**
+ * @summary Create a combo booking with several courts and/or hourly slots
+ */
+export const createBookingBodyItemsMax = 40;
+
+export const createBookingBodyCustomerNameMin = 2;
+
+export const createBookingBodyCustomerPhoneMin = 10;
+
+
+
+export const CreateBookingBody = zod.object({
+  "items": zod.array(zod.object({
+  "facilityId": zod.int(),
+  "court": zod.int().optional(),
+  "date": zod.coerce.date(),
+  "startTime": zod.string(),
+  "endTime": zod.string()
+})).min(1).max(createBookingBodyItemsMax),
+  "customerName": zod.string().min(createBookingBodyCustomerNameMin),
+  "customerPhone": zod.string().min(createBookingBodyCustomerPhoneMin),
+  "customerEmail": zod.email(),
+  "paymentMethod": zod.enum(['pix', 'card'])
+})
+
+export const createBookingResponseReservationsItemOneCustomerNameMin = 2;
+
+export const createBookingResponseReservationsItemOneCustomerPhoneMin = 10;
+
+
+
+export const CreateBookingResponse = zod.object({
+  "code": zod.string(),
+  "totalCents": zod.int(),
+  "paymentMethod": zod.enum(['pix', 'card']),
+  "reservations": zod.array(zod.object({
+  "facilityId": zod.int(),
+  "court": zod.int().optional().describe('Which specific court to reserve, for facilities with multiple courts (defaults to 1)'),
+  "date": zod.coerce.date(),
+  "startTime": zod.string(),
+  "endTime": zod.string(),
+  "customerName": zod.string().min(createBookingResponseReservationsItemOneCustomerNameMin),
+  "customerPhone": zod.string().min(createBookingResponseReservationsItemOneCustomerPhoneMin),
+  "customerEmail": zod.email(),
+  "paymentMethod": zod.enum(['pix', 'card'])
+}).and(zod.object({
+  "id": zod.int(),
+  "facilityName": zod.string(),
+  "priceCents": zod.int(),
+  "status": zod.enum(['pending', 'confirmed', 'cancelled']),
+  "bookingCode": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+}))),
+  "pix": zod.union([zod.object({
+  "payload": zod.string().describe('Pix copy-and-paste (BR Code) with the amount already fixed'),
+  "amountCents": zod.int()
+}),zod.null()])
+})
 
 
 /**
@@ -196,6 +258,7 @@ export const UpdateReservationResponse = zod.object({
   "facilityName": zod.string(),
   "priceCents": zod.int(),
   "status": zod.enum(['pending', 'confirmed', 'cancelled']),
+  "bookingCode": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 }))
 

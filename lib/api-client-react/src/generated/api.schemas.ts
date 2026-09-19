@@ -90,13 +90,67 @@ export const ReservationStatus = {
   cancelled: 'cancelled',
 } as const;
 
-export type Reservation = ReservationInput & {
+export type Reservation = ReservationInput & ({
   id: number;
   facilityName: string;
   priceCents: number;
   status: ReservationStatus;
+  /** @nullable */
+  bookingCode?: string | null;
   createdAt: string;
-};
+});
+
+export interface BookingItem {
+  facilityId: number;
+  court?: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+export type BookingInputPaymentMethod = typeof BookingInputPaymentMethod[keyof typeof BookingInputPaymentMethod];
+
+
+export const BookingInputPaymentMethod = {
+  pix: 'pix',
+  card: 'card',
+} as const;
+
+export interface BookingInput {
+  /**
+     * @minItems 1
+     * @maxItems 40
+     */
+  items: BookingItem[];
+  /** @minLength 2 */
+  customerName: string;
+  /** @minLength 10 */
+  customerPhone: string;
+  customerEmail: string;
+  paymentMethod: BookingInputPaymentMethod;
+}
+
+export interface BookingPix {
+  /** Pix copy-and-paste (BR Code) with the amount already fixed */
+  payload: string;
+  amountCents: number;
+}
+
+export type BookingPaymentMethod = typeof BookingPaymentMethod[keyof typeof BookingPaymentMethod];
+
+
+export const BookingPaymentMethod = {
+  pix: 'pix',
+  card: 'card',
+} as const;
+
+export interface Booking {
+  code: string;
+  totalCents: number;
+  paymentMethod: BookingPaymentMethod;
+  reservations: Reservation[];
+  pix: BookingPix | null;
+}
 
 export type ReservationUpdateStatus = typeof ReservationUpdateStatus[keyof typeof ReservationUpdateStatus];
 

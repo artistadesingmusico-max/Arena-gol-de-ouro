@@ -8,10 +8,12 @@
 import type { ReservationInput } from './reservationInput';
 import type { ReservationStatus } from './reservationStatus';
 
-export type Reservation = ReservationInput & {
+export type Reservation = ReservationInput & ({
   id: number;
   facilityName: string;
   priceCents: number;
   status: ReservationStatus;
+  /** @nullable */
+  bookingCode?: string | null;
   createdAt: Date;
-};
+});
